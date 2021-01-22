@@ -8,13 +8,30 @@ void setup()
 
 void loop()
 {
+    int memoryUsed;
+    int memoryMax = 1200;
+
     if (Serial.available())
     {
         // Allocate the JsonDocument.
-        StaticJsonDocument<1024> doc;
+        DynamicJsonDocument doc(memoryMax);
+
+        Serial.print("Memory used before deserialization: ");
+        memoryUsed = doc.memoryUsage();
+        Serial.print(memoryUsed);
+        Serial.print("; ");
 
         // Parse the JSON input via serial.
         DeserializationError error = deserializeJson(doc, Serial);
+
+        Serial.print("Memory used after deserialization: ");
+        memoryUsed = doc.memoryUsage();
+        Serial.print(memoryUsed);
+        Serial.print("; ");
+
+        Serial.print("Maximum amount of memory: ");
+        Serial.print(memoryMax);
+        Serial.print("; ");
 
         // Parse succeeded?
         if (error)

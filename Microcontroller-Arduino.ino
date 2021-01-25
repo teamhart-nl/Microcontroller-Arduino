@@ -9,12 +9,20 @@ void setup()
 void loop()
 {
     int memoryUsed;
-    int memoryMax = 1200;
+
+    // Dynamic memory of the Arduino Nano.
+    // const int memoryMax = 2048;
+
+    // Dynamic memory of the Arduino Mega.
+    const int memoryMax = 8192;
+
+    // Leave some room for other variables.
+    int memoryMaxUsable = memoryMax - 1024;
 
     if (Serial.available())
     {
         // Allocate the JsonDocument.
-        DynamicJsonDocument doc(memoryMax);
+        DynamicJsonDocument doc(memoryMaxUsable);
 
         Serial.print("Memory used before deserialization: ");
         memoryUsed = doc.memoryUsage();
@@ -29,8 +37,8 @@ void loop()
         Serial.print(memoryUsed);
         Serial.print("; ");
 
-        Serial.print("Maximum amount of memory: ");
-        Serial.print(memoryMax);
+        Serial.print("Maximum amount of memory in json: ");
+        Serial.print(memoryMaxUsable);
         Serial.print("; ");
 
         // Parse succeeded?

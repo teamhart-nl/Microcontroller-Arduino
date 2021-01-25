@@ -50,6 +50,15 @@ void loop()
         }
         else
         {
+            JsonObject ledMapping = doc["ledMapping"].as<JsonObject>();
+            for (JsonPair ledMappingPair : ledMapping)
+            {
+                int ledPin = ledMappingPair.value();
+
+                // Configure digital pin as output.
+                pinMode(ledPin, OUTPUT);
+            }
+
             // Get a reference to the root array.
             JsonArray patternArray = doc["pattern"].as<JsonArray>();
             for (JsonObject vibration : patternArray)
@@ -69,6 +78,17 @@ void loop()
                     // Get values from json document.
                     int pin = pinItem["pin"];
                     int motorSpeed = pinItem["pwm"];
+
+                    int ledPin = doc["ledMapping"][String(pin)];
+
+                    if (motorSpeed > 0)
+                    {
+                        digitalWrite(ledPin, HIGH);
+                    }
+                    else
+                    {
+                        digitalWrite(ledPin, LOW);
+                    }
 
                     // Set vibration motor speed.
                     analogWrite(pin, motorSpeed);

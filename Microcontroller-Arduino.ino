@@ -2,17 +2,15 @@
 
 void setup()
 {
+    // Start serial connection with a set baudrate.
     Serial.begin(115200);
+
+    // Waits for transmission of outgoing serial data to complete.
     Serial.flush();
 }
 
 void loop()
 {
-    int memoryUsed;
-
-    // Dynamic memory of the Arduino Nano.
-    // const int memoryMax = 2048;
-
     // Dynamic memory of the Arduino Mega.
     const int memoryMax = 8192;
 
@@ -24,85 +22,131 @@ void loop()
         // Allocate the JsonDocument.
         DynamicJsonDocument doc(memoryMaxUsable);
 
-        Serial.print("Memory used before deserialization: ");
-        memoryUsed = doc.memoryUsage();
-        Serial.print(memoryUsed);
-        Serial.print("; ");
-
         // Parse the JSON input via serial.
         DeserializationError error = deserializeJson(doc, Serial);
 
-        Serial.print("Memory used after deserialization: ");
-        memoryUsed = doc.memoryUsage();
-        Serial.print(memoryUsed);
-        Serial.print("; ");
-
-        Serial.print("Maximum amount of memory in json: ");
-        Serial.print(memoryMaxUsable);
-        Serial.print("; ");
+        // Log memory usage to output.
+        LogMemoryUsage(doc, memoryMaxUsable);
 
         // Parse succeeded?
         if (error)
         {
-            Serial.print("deserializeJson() returned ");
-            Serial.println(error.c_str());
+            // Log deserialization error to output.
+            LogDeserializationError(error);
             return;
         }
         else
         {
+            // Extract LED mapping.
             JsonObject ledMapping = doc["ledMapping"].as<JsonObject>();
-            for (JsonPair ledMappingPair : ledMapping)
-            {
-                int ledPin = ledMappingPair.value();
 
-                // Configure digital pin as output.
-                pinMode(ledPin, OUTPUT);
-            }
+            // Configure digital pins as output.
+            ConfigurePinsAsOutput(ledMapping);
 
-            // Get a reference to the root array.
+            // Extract pattern.
             JsonArray patternArray = doc["pattern"].as<JsonArray>();
-            for (JsonObject vibration : patternArray)
-            {
-                // Get value from json document.
-                int duration = vibration["time"];
 
-                // Output prints.
-                Serial.print("vibrating for ");
-                Serial.print(duration);
-                Serial.print("ms on pins ");
+            // Perform the vibration pattern.
+            PerformVibrationPattern(patternArray, ledMapping);
 
-                // Get a reference to the root array.
-                JsonArray pinArray = vibration["pins"].as<JsonArray>();
-                for (JsonObject pinItem : pinArray)
-                {
-                    // Get values from json document.
-                    int pin = pinItem["pin"];
-                    int motorSpeed = pinItem["pwm"];
-
-                    int ledPin = doc["ledMapping"][String(pin)];
-
-                    if (motorSpeed > 0)
-                    {
-                        digitalWrite(ledPin, HIGH);
-                    }
-                    else
-                    {
-                        digitalWrite(ledPin, LOW);
-                    }
-
-                    // Set vibration motor speed.
-                    analogWrite(pin, motorSpeed);
-
-                    // Output prints.
-                    Serial.print(pin);
-                    Serial.print(":");
-                    Serial.print(motorSpeed);
-                    Serial.print(", ");
-                }
-                delay(duration);
-            }
-            // Output print. DO NOT REMOVE. Python will wait forever if there is no output.
+            // End the line. DO NOT REMOVE. Python will wait forever if there is no end of the line.
             Serial.println();
         }
     }
+}
+
+void ConfigurePinsAsOutput(const JsonObject &ledMapping)
+{
+    for (JsonPair ledMappingPair : ledMapping)
+    {
+        int ledPin = ledMappingPair.value();
+        pinMode(ledPin, OUTPUT);
+    }
+}
+
+int GetLedPin(const int pin, const JsonObject &ledMapping)
+{
+    int ledPin = ledMapping[String(pin)];
+    return ledPin;
+}
+
+void PerformVibrationPattern(const JsonArray &patternArray, const JsonObject &ledMapping)
+{
+    // Loop through vibration pattern.
+    for (JsonObject vibration : patternArray)
+    {
+        int duration = vibration["time"];
+
+        // Log duration to output.
+        LogDuration(duration);
+
+        // Set vibration speeds and LEDs.
+        SetVibration(vibration, ledMapping);
+
+        // Leave the motors on for a set duration.
+        delay(duration);
+    }
+}
+
+void SetVibration(const JsonObject &vibration, const JsonObject &ledMapping)
+{
+    JsonArray pinArray = vibration["pins"].as<JsonArray>();
+
+    for (JsonObject pinItem : pinArray)
+    {
+        int pin = pinItem["pin"];
+        int motorSpeed = pinItem["pwm"];
+        int ledPin = GetLedPin(pin, ledMapping);
+
+        // Set vibration motor speed.
+        analogWrite(pin, motorSpeed);
+
+        // Log speed set to output.
+        LogSpeedSet(pin, motorSpeed);
+
+        if (motorSpeed > 0)
+        {
+            // Turn LED on.
+            digitalWrite(ledPin, HIGH);
+        }
+        else
+        {
+            // Turn LED off.
+            digitalWrite(ledPin, LOW);
+        }
+    }
+}
+
+void LogDuration(const int duration)
+{
+    Serial.print("vibrating for ");
+    Serial.print(duration);
+    Serial.print("ms on pins ");
+}
+
+
+void LogSpeedSet(const int pin, const int motorSpeed)
+{
+    Serial.print(pin);
+    Serial.print(":");
+    Serial.print(motorSpeed);
+    Serial.print(", ");
+}
+
+void LogMemoryUsage(const DynamicJsonDocument &doc, const int memoryMaxUsable)
+{
+    Serial.print("Memory used: ");
+    int memoryUsed = doc.memoryUsage();
+    Serial.print(memoryUsed);
+    Serial.print("; ");
+
+    Serial.print("Max. memory: ");
+    Serial.print(memoryMaxUsable);
+    Serial.print("; ");
+}
+
+void LogDeserializationError(const DeserializationError &error)
+{
+    Serial.print("deserializeJson() returned ");
+    Serial.println(error.c_str());
 }

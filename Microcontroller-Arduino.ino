@@ -40,12 +40,22 @@ void loop()
             // Extract pattern.
             JsonArray patternArray = doc["pattern"].as<JsonArray>();
 
+            ConfigurePinsAsOutput();
+
             // Perform the vibration pattern.
             PerformVibrationPattern(patternArray);
 
             // End the line. DO NOT REMOVE. Python will wait forever if there is no end of the line.
-            Serial.println("");
+            Serial.println();
         }
+    }
+}
+
+void ConfigurePinsAsOutput()
+{
+    for (int i = 32; i <= 54; i++)
+    {
+        pinMode(i, OUTPUT);
     }
 }
 
@@ -77,7 +87,8 @@ void SetVibration(const JsonObject &vibration)
         int motorSpeed = pinItem["pwm"];
 
         // Set vibration motor speed.
-        analogWrite(pin, motorSpeed);
+        // analogWrite(pin, motorSpeed);
+        digitalWrite(pin, motorSpeed);
 
         // Log speed set to output.
         LogSpeedSet(pin, motorSpeed);

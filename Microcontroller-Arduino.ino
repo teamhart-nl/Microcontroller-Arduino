@@ -46,7 +46,7 @@ void loop()
             PerformVibrationPattern(patternArray);
 
             // End the line. DO NOT REMOVE. Python will wait forever if there is no end of the line.
-            Serial.println();
+            Serial.println("");
         }
     }
 }
@@ -87,7 +87,6 @@ void SetVibration(const JsonObject &vibration)
         int motorSpeed = pinItem["pwm"];
 
         // Set vibration motor speed.
-        // analogWrite(pin, motorSpeed);
         digitalWrite(pin, motorSpeed);
 
         // Log speed set to output.

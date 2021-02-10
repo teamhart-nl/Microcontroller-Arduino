@@ -37,17 +37,11 @@ void loop()
         }
         else
         {
-            // Extract LED mapping.
-            JsonObject ledMapping = doc["ledMapping"].as<JsonObject>();
-
-            // Configure digital pins as output.
-            ConfigurePinsAsOutput(ledMapping);
-
             // Extract pattern.
             JsonArray patternArray = doc["pattern"].as<JsonArray>();
 
             // Perform the vibration pattern.
-            PerformVibrationPattern(patternArray, ledMapping);
+            PerformVibrationPattern(patternArray);
 
             // End the line. DO NOT REMOVE. Python will wait forever if there is no end of the line.
             Serial.println();
@@ -55,22 +49,7 @@ void loop()
     }
 }
 
-void ConfigurePinsAsOutput(const JsonObject &ledMapping)
-{
-    for (JsonPair ledMappingPair : ledMapping)
-    {
-        int ledPin = ledMappingPair.value();
-        pinMode(ledPin, OUTPUT);
-    }
-}
-
-int GetLedPin(const int pin, const JsonObject &ledMapping)
-{
-    int ledPin = ledMapping[String(pin)];
-    return ledPin;
-}
-
-void PerformVibrationPattern(const JsonArray &patternArray, const JsonObject &ledMapping)
+void PerformVibrationPattern(const JsonArray &patternArray)
 {
     // Loop through vibration pattern.
     for (JsonObject vibration : patternArray)
@@ -80,15 +59,15 @@ void PerformVibrationPattern(const JsonArray &patternArray, const JsonObject &le
         // Log duration to output.
         LogDuration(duration);
 
-        // Set vibration speeds and LEDs.
-        SetVibration(vibration, ledMapping);
+        // Set vibration speeds.
+        SetVibration(vibration);
 
         // Leave the motors on for a set duration.
         delay(duration);
     }
 }
 
-void SetVibration(const JsonObject &vibration, const JsonObject &ledMapping)
+void SetVibration(const JsonObject &vibration)
 {
     JsonArray pinArray = vibration["pins"].as<JsonArray>();
 
@@ -96,24 +75,12 @@ void SetVibration(const JsonObject &vibration, const JsonObject &ledMapping)
     {
         int pin = pinItem["pin"];
         int motorSpeed = pinItem["pwm"];
-        int ledPin = GetLedPin(pin, ledMapping);
 
         // Set vibration motor speed.
         analogWrite(pin, motorSpeed);
 
         // Log speed set to output.
         LogSpeedSet(pin, motorSpeed);
-
-        if (motorSpeed > 0)
-        {
-            // Turn LED on.
-            digitalWrite(ledPin, HIGH);
-        }
-        else
-        {
-            // Turn LED off.
-            digitalWrite(ledPin, LOW);
-        }
     }
 }
 

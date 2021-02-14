@@ -44,7 +44,7 @@ void loop()
             PerformVibrationPattern(patternArray);
 
             // End the line. DO NOT REMOVE. Python will wait forever if there is no end of the line.
-            Serial.println();
+            Serial.println("");
         }
     }
 }

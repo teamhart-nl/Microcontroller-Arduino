@@ -1,9 +1,25 @@
 #include <ArduinoJson.h>
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+
+Adafruit_PWMServoDriver pwm1 = Adafruit_PWMServoDriver(0x40);
+Adafruit_PWMServoDriver pwm2 = Adafruit_PWMServoDriver(0x41);
 
 void setup()
 {
     // Start serial connection with a set baudrate.
     Serial.begin(115200);
+
+    pwm1.begin();
+    pwm2.begin();
+
+    pwm1.setOscillatorFrequency(27000000);
+    pwm2.setOscillatorFrequency(27000000);
+
+    pwm1.setPWMFreq(60);
+    pwm2.setPWMFreq(60);
+
+    Wire.setClock(400000);
 
     // Waits for transmission of outgoing serial data to complete.
     Serial.flush();
@@ -77,7 +93,18 @@ void SetVibration(const JsonObject &vibration)
         int motorSpeed = pinItem["pwm"];
 
         // Set vibration motor speed.
-        analogWrite(pin, motorSpeed);
+        if (pin >= 0 && pin<16)
+        {
+            pwm1.setPin(pin, motorSpeed, false);
+        }
+        else if (pin >= 16 && pin<32)
+        {
+            pwm2.setPin(pin, motorSpeed, false);
+        }
+        else
+        {
+            Serial.println("ERROR: PINLABEL DOES NOT EXIST.");
+        }
 
         // Log speed set to output.
         LogSpeedSet(pin, motorSpeed);

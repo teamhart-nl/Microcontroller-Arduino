@@ -91,7 +91,7 @@ void SetVibration(const JsonObject &vibration)
     {
         int pin = pinItem["pin"];
         int motorSpeedPercentage = pinItem["pwm"];
-        int motorSpeed = (int) 4095 * motorSpeedPercentage / 100
+        int motorSpeed = (int) 4095 * motorSpeedPercentage / 100;
 
         // Set vibration motor speed.
         if (pin >= 0 && pin<16)

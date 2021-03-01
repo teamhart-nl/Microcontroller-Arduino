@@ -1,6 +1,9 @@
 #include <ArduinoJson.h>
 #include <Wire.h>
-#include "PCA9685.h"
+
+// Download via Arduino Library Manager. Search on "pca9685-arduino" (created by nachtravevl)
+// https://github.com/NachtRaveVL/PCA9685-Arduino
+#include "PCA9685.h" 
 
 PCA9685 pwmController1(B000000);
 PCA9685 pwmController2(B000001);

@@ -1,9 +1,12 @@
-#include <ArduinoJson.h>
 #include <Wire.h>
 
-// Download via Arduino Library Manager. Search on "pca9685-arduino" (created by nachtravevl)
+// Download via Arduino Library Manager
+// PCA9685 16-Channel PWM Driver Module Library by NachtRaveVL, v1.2.15
+// You can simply search on "pca9685-arduino"
 // https://github.com/NachtRaveVL/PCA9685-Arduino
 #include "PCA9685.h" 
+// ArduinoJson by Benoit Blanchon, v6.17.3
+#include <ArduinoJson.h>
 
 PCA9685 pwmController1(B000000);
 PCA9685 pwmController2(B000001);
